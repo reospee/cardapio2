@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardápio Digital</title>
+<script src="https://cdn.jsdelivr.net/npm/qrious"></script> <!-- Importa a biblioteca qrious -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+    }
+    h2 {
+        text-align: center;
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    li {
+        margin-bottom: 10px;
+    }
+    .price {
+        float: right;
+    }
+    button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    input[type="number"] {
+        width: 50px;
+    }
+    #qrcode {
+        display: block;
+        margin: 20px auto;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Cardápio Digital</h2>
+    <form id="order-form">
+        <ul>
+            <li><strong>Pães:</strong></li>
+            <li>
+                <input type="checkbox" id="pao-frances" name="pao-frances" data-price="0.50" onchange="updatePreview()">
+                Pão Francês - <span class="price">R$ 0,50</span>
+                <input type="number" id="quantity-pao-frances" name="quantity-pao-frances" min="0" value="0"> Quantidade
+            </li>
+            <!-- Adicione mais itens de pães aqui -->
+
+            <li><strong>Doces:</strong></li>
+            <li>
+                <input type="checkbox" id="bolo-chocolate" name="bolo-chocolate" data-price="5.00" onchange="updatePreview()">
+                Bolo de Chocolate - <span class="price">R$ 5,00</span>
+                <input type="number" id="quantity-bolo-chocolate" name="quantity-bolo-chocolate" min="0" value="0"> Quantidade
+            </li>
+            <!-- Adicione mais itens de doces aqui -->
+        </ul>
+
+        <div id="order-preview">
+            <h3>Prévia do Pedido</h3>
+            <ul id="preview-list"></ul>
+        </div>
+
+        <div id="total-price">
+            <h3>Valor Total dos Pedidos: R$ 0,00</h3>
+        </div>
+
+        <div>
+            <h3>Forma de Pagamento:</h3>
+            <select id="payment-method" onchange="updatePreview()">
+                <option value="cartao">Cartão de Crédito</option>
+                <option value="pix">PIX</option>
+                <option value="dinheiro">Dinheiro</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <button type="button" onclick="confirmOrder()">Confirmar Pedido</button>
+        </div>
+    </form>
+</div>
+
+<!-- Div para o QR code -->
+<div id="qrcode"></div>
+
+<script>
+    function updatePreview() {
+        const previewList = document.getElementById('preview-list');
+        previewList.innerHTML = '';
+
+        let totalPrice = 0;
+
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const itemName = checkbox.parentElement.textContent.trim();
+                const price = parseFloat(checkbox.dataset.price);
+                const quantity = parseInt(document.getElementById(`quantity-${checkbox.id}`).value);
+                const totalItemPrice = price * quantity;
+                totalPrice += totalItemPrice;
+
+                const listItem = document.createElement('li');
+                listItem.textContent = `${itemName} - Quantidade: ${quantity} - Valor: R$ ${totalItemPrice.toFixed(2)}`;
+                previewList.appendChild(listItem);
+            }
+        });
+
+        document.getElementById('total-price').innerHTML = `<h3>Valor Total dos Pedidos: R$ ${totalPrice.toFixed(2)}</h3>`;
+
+        // Atualiza o QR code
+        updateQRCode();
+    }
+
+    function confirmOrder() {
+        const paymentMethod = document.getElementById('payment-method').value;
+        const totalPrice = parseFloat(document.getElementById('total-price').textContent.split(' ')[4]);
+        const confirmationMessage = `Pedido confirmado! Total: R$ ${totalPrice.toFixed(2)}. Forma de pagamento: ${paymentMethod}.`;
+        alert(confirmationMessage);
+    }
+
+    function updateQRCode() {
+        const qrCodeDiv = document.getElementById('qrcode');
+        qrCodeDiv.innerHTML = ''; // Limpa o conteúdo anterior
+
+        // Cria o QR code com base no URL do cardápio
+        const qr = new QRious({
+            element: qrCodeDiv,
+            value: window.location.href // Use o URL atual como valor para o QR code
+        });
+    }
+</script>
+</body>
+</html>
